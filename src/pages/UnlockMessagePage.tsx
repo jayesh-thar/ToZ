@@ -38,6 +38,8 @@ const HeartButton = styled.button<{ holding: boolean; unlocked: boolean }>`
   margin-bottom: 2rem;
   position: relative;
   overflow: visible;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 `;
 
 const GlowingHeart = styled.span`
@@ -125,6 +127,28 @@ const UnlockMessagePage: React.FC = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
   };
 
+  // Touch events for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault();
+    setHolding(true);
+    timerRef.current = setTimeout(() => {
+      setUnlocked(true);
+      setHolding(false);
+    }, 3000);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault();
+    setHolding(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+  };
+
+  const handleTouchCancel = (e: React.TouchEvent) => {
+    e.preventDefault();
+    setHolding(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+  };
+
   return (
     <PageContainer>
       <NeonText style={{ fontSize: '2.5rem', marginBottom: '2rem', textAlign: 'center' }}>
@@ -136,6 +160,9 @@ const UnlockMessagePage: React.FC = () => {
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
         disabled={unlocked}
       >
         <GlowingHeart>💖</GlowingHeart>
