@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { PageContainer, NeonText } from '../styles/SharedStyles';
 
+
 const heartNeonGlow = keyframes`
   0%, 100% {
     text-shadow:
@@ -43,11 +44,6 @@ const GlowingHeart = styled.span`
   font-size: 3rem;
   display: inline-block;
   animation: ${heartNeonGlow} 1.6s infinite alternate;
-`;
-
-const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
 `;
 
 const MessageContainer = styled.div<{ animating: boolean }>`
