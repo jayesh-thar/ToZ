@@ -1,0 +1,34 @@
+# dependencies
+node_modules/
+
+# production
+/dist
+
+# misc
+.env
+.env.*
+
+# local env files
+*.local
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Optional: lock files
+# package-lock.json
+yarn.lock 
