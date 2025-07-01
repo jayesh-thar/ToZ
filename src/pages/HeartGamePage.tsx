@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { PageContainer, NeonText, NeonButton } from '../styles/SharedStyles';
@@ -25,16 +25,20 @@ const heartCelebrate = keyframes`
   }
 `;
 
-const DraggableHeart = styled.div<{ isDragging: boolean }>`
+const DraggableHeart = styled.div<{ isDragging: boolean; isDraggingTouch: boolean }>`
   font-size: 4rem;
   cursor: grab;
   user-select: none;
-  opacity: ${({ isDragging }) => (isDragging ? 0.5 : 1)};
+  touch-action: none;
+  opacity: ${({ isDragging, isDraggingTouch }) => (isDragging || isDraggingTouch ? 0.5 : 1)};
   transition: opacity 0.2s;
   text-shadow: 0 0 10px #fff,
                0 0 20px #e60073,
                0 0 30px #e60073;
   will-change: transform, opacity;
+  position: ${({ isDraggingTouch }) => (isDraggingTouch ? 'fixed' : 'static')};
+  z-index: ${({ isDraggingTouch }) => (isDraggingTouch ? 1000 : 'auto')};
+  transform: ${({ isDraggingTouch }) => (isDraggingTouch ? 'translate(-50%, -50%)' : 'none')};
 `;
 
 const DropZone = styled.div<{ isOver: boolean }>`
@@ -94,11 +98,15 @@ const SuccessMessage = styled(NeonText)`
 
 const HeartGamePage: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
+  const [isDraggingTouch, setIsDraggingTouch] = useState(false);
   const [isOver, setIsOver] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [touchPosition, setTouchPosition] = useState({ x: 0, y: 0 });
   const heartRef = useRef<HTMLDivElement>(null);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
+  // Mouse drag events
   const handleDragStart = (e: React.DragEvent) => {
     setIsDragging(true);
     e.dataTransfer.setData('text/plain', 'heart');
@@ -124,6 +132,43 @@ const HeartGamePage: React.FC = () => {
     setSuccess(true);
   };
 
+  // Touch events for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    setTouchPosition({ x: touch.clientX, y: touch.clientY });
+    setIsDraggingTouch(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault();
+    if (isDraggingTouch) {
+      const touch = e.touches[0];
+      setTouchPosition({ x: touch.clientX, y: touch.clientY });
+      
+      // Check if touch is over drop zone
+      if (dropZoneRef.current) {
+        const dropZoneRect = dropZoneRef.current.getBoundingClientRect();
+        const isOverDropZone = 
+          touch.clientX >= dropZoneRect.left &&
+          touch.clientX <= dropZoneRect.right &&
+          touch.clientY >= dropZoneRect.top &&
+          touch.clientY <= dropZoneRect.bottom;
+        
+        setIsOver(isOverDropZone);
+      }
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault();
+    if (isDraggingTouch && isOver) {
+      setSuccess(true);
+    }
+    setIsDraggingTouch(false);
+    setIsOver(false);
+  };
+
   const handleNext = () => {
     navigate('/unlock-message');
   };
@@ -139,14 +184,23 @@ const HeartGamePage: React.FC = () => {
             ref={heartRef}
             draggable
             isDragging={isDragging}
+            isDraggingTouch={isDraggingTouch}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
-            style={{ pointerEvents: success ? 'none' : 'auto' }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            style={{ 
+              pointerEvents: success ? 'none' : 'auto',
+              left: isDraggingTouch ? `${touchPosition.x}px` : 'auto',
+              top: isDraggingTouch ? `${touchPosition.y}px` : 'auto'
+            }}
           >
             💝
           </DraggableHeart>
         )}
         <DropZone
+          ref={dropZoneRef}
           isOver={isOver}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
