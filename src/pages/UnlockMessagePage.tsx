@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
-import styled, { keyframes, css } from 'styled-components';
-import { PageContainer, NeonText, NeonButton } from '../styles/SharedStyles';
+import styled, { keyframes } from 'styled-components';
+import { PageContainer, NeonText } from '../styles/SharedStyles';
 
 const heartNeonGlow = keyframes`
   0%, 100% {
